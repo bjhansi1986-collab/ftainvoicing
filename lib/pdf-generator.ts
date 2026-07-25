@@ -170,10 +170,17 @@ export class PDFGenerator {
       }
       return ellipsis;
     };
-    const drawRightAligned = (text: string, xRight: number, y: number, size = 10, useBold = false) => {
+    const drawRightAligned = (
+      text: string,
+      xRight: number,
+      y: number,
+      size = 10,
+      useBold = false,
+      color = rgb(0.15, 0.15, 0.15)
+    ) => {
       const font = useBold ? bold : regular;
       const textWidth = font.widthOfTextAtSize(text, size);
-      drawText(text, xRight - textWidth, y, size, useBold);
+      drawText(text, xRight - textWidth, y, size, useBold, color);
     };
 
     const drawLeftInCell = (
