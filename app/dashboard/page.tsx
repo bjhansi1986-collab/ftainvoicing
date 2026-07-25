@@ -13,7 +13,14 @@ interface DashboardStats {
   overdueInvoices: number;
 }
 
-const StatCard = ({ title, value, icon, color }: any) => (
+type StatCardProps = {
+  title: string;
+  value: string | number;
+  icon: string;
+  color: string;
+};
+
+const StatCard = ({ title, value, icon, color }: StatCardProps) => (
   <div className="card hover:shadow-lg transition-shadow">
     <div className="flex items-center justify-between">
       <div>

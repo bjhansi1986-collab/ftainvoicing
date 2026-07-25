@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "start:render": "prisma migrate deploy && next start",
     "start:hostinger": "prisma migrate deploy && next start",
     "lint": "next lint",
     "prisma:generate": "prisma generate",

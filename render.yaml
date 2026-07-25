@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: fta-invoice-pro
+    runtime: node
+    plan: starter
+    region: singapore
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start:render
+    autoDeploy: true
+    healthCheckPath: /login
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_BASE_PATH
+        value: ""
+      - key: DATABASE_URL
+        value: file:/var/data/prod.db
+      - key: NEXTAUTH_URL
+        sync: false
+      - key: NEXTAUTH_SECRET
+        generateValue: true
+    disks:
+      - name: sqlite-data
+        mountPath: /var/data
+        sizeGB: 1
