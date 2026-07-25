@@ -1,0 +1,179 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id          String   @id @default(cuid())
+  name        String
+  uaeId       String?  @unique
+  email       String
+  phone       String
+  address     String
+  city        String
+  country     String @default("UAE")
+  taxId       String?  @unique
+  trrn        String?
+  vatRate     Float    @default(5)
+  logo        String?
+  signature   String?
+  bankDetails String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  invoices              Invoice[]
+  clients               Client[]
+  items                 Item[]
+  invoiceSettings       InvoiceSettings?
+  paymentTerms          PaymentTerm[]
+  
+  @@index([uaeId])
+}
+
+model Client {
+  id          String   @id @default(cuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name        String
+  email       String
+  phone       String
+  address     String
+  city        String
+  country     String @default("UAE")
+  taxId       String?
+  tradeId     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  invoices    Invoice[]
+
+  @@unique([companyId, email])
+  @@index([companyId])
+}
+
+model Item {
+  id          String   @id @default(cuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  sku         String?
+  unitPrice   Float
+  currency    String   @default("AED")
+  taxRate     Float    @default(5.0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  invoiceLines InvoiceLine[]
+
+  @@unique([companyId, sku])
+  @@index([companyId])
+}
+
+model InvoiceSettings {
+  id                  String   @id @default(cuid())
+  companyId           String   @unique
+  company             Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  invoicePrefix       String   @default("INV")
+  invoiceNumbering    Int      @default(1000)
+  defaultCurrency     String   @default("AED")
+  defaultVatRate      Float    @default(5.0)
+  enableVat           Boolean  @default(true)
+  paymentTermsDays    Int      @default(30)
+  invoiceTemplate     String   @default("standard") // standard, minimal, detailed
+  customNotes         String?
+  footerText          String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([companyId])
+}
+
+model PaymentTerm {
+  id          String   @id @default(cuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name        String
+  days        Int
+  description String?
+
+  @@unique([companyId, name])
+  @@index([companyId])
+}
+
+model Invoice {
+  id                String   @id @default(cuid())
+  companyId         String
+  company           Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  clientId          String
+  client            Client   @relation(fields: [clientId], references: [id])
+  invoiceNumber     String
+  invoiceDate       DateTime
+  dueDate           DateTime
+  currency          String   @default("AED")
+  subtotal          Float
+  taxAmount         Float
+  totalAmount       Float
+  exchangeRate      Float    @default(1)
+  status            String   @default("draft") // draft, sent, paid, overdue, cancelled
+  paymentStatus     String   @default("unpaid") // unpaid, partially_paid, paid
+  paidAmount        Float    @default(0)
+  notes             String?
+  customTemplate    String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  sentAt            DateTime?
+  paidAt            DateTime?
+
+  lines             InvoiceLine[]
+  payments          Payment[]
+
+  @@unique([companyId, invoiceNumber])
+  @@index([companyId])
+  @@index([clientId])
+  @@index([status])
+  @@index([paymentStatus])
+}
+
+model InvoiceLine {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  itemId      String?
+  item        Item?    @relation(fields: [itemId], references: [id])
+  description String
+  quantity    Float
+  unitPrice   Float
+  taxRate     Float    @default(5.0)
+  taxAmount   Float
+  lineTotal   Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([invoiceId])
+  @@index([itemId])
+}
+
+model Payment {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  amount      Float
+  paymentDate DateTime
+  paymentMethod String  // cash, check, bank_transfer, card, online
+  reference   String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([invoiceId])
+  @@index([paymentDate])
+}
+

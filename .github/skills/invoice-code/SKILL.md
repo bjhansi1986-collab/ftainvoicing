@@ -1,0 +1,8 @@
+---
+name: invoice-code
+description: Use this skill to understand the VAT compliant invoicing process for UAE with multi currency enabled and various steps in the invoicing process.
+---
+
+<!-- Tip: Use /create-skill in chat to generate content with agent assistance -->
+
+This skill is designed to help you understand the VAT compliant invoicing process for UAE with multi-currency enabled and various steps in the invoicing process. It provides guidance on how to create, manage, and process invoices while ensuring compliance with UAE VAT regulations. Use this skill to learn about the invoicing workflow, including invoice creation, approval, payment processing, and reporting. It also covers best practices for handling multi-currency transactions and maintaining accurate financial records. Based on the invoicing process, this skill should create the relevant code and pages like create invoice, view invoice, edit invoice, delete invoice, and other related pages. It should also include the necessary API routes to handle the invoicing process and ensure that all financial calculations are accurate and compliant with UAE VAT regulations. It should also allow to create item master, customer master, and other related masters to support the invoicing process. The skill should also provide guidance on how to handle different invoice types, such as proforma invoices, credit notes, and debit notes, and how to manage invoice numbering and sequencing. Additionally, it should cover the integration of payment gateways and the generation of payment receipts. Overall, this skill aims to provide a comprehensive understanding of the UAE VAT compliant invoicing process with multi-currency support and best practices for managing invoices effectively.
