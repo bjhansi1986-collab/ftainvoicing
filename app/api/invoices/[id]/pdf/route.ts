@@ -81,8 +81,9 @@ export async function GET(
     };
 
     const pdfBuffer = await PDFGenerator.generateInvoicePDF(pdfData);
+    const pdfBlob = new Blob([pdfBuffer], { type: 'application/pdf' });
 
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(pdfBlob, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${invoice.invoiceNumber}.pdf"`,
