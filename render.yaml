@@ -5,6 +5,7 @@ services:
     plan: starter
     region: singapore
     buildCommand: npm ci && npm run build
+    preDeployCommand: npm run prisma:migrate:deploy
     startCommand: npm run start:render
     autoDeploy: true
     healthCheckPath: /login

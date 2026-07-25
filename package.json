@@ -6,12 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "start:render": "prisma migrate deploy && next start",
+    "start:render": "prisma migrate deploy && prisma db push && next start",
     "start:hostinger": "prisma migrate deploy && next start",
     "lint": "next lint",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:db:push": "prisma db push",
     "postinstall": "prisma generate"
   },
   "dependencies": {

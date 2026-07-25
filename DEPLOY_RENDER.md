@@ -79,3 +79,31 @@ Verify:
 - Create/edit client/item/invoice works
 - PDF download works
 - Logo/signature appear in PDF
+
+## 8) Troubleshooting: `The table main.Company does not exist`
+
+If you see:
+
+- `Invalid prisma.company.findFirst() invocation`
+- `The table main.Company does not exist in the current database`
+
+do the following in Render:
+
+1. Confirm service settings:
+- Start Command is `npm run start:render`
+- Persistent disk is mounted at `/var/data`
+- `DATABASE_URL` is exactly `file:/var/data/prod.db`
+
+2. Open Render Shell and run:
+
+```bash
+ls -la /var/data
+npm run prisma:migrate:deploy
+npm run prisma:db:push
+```
+
+3. Restart the service.
+
+Why this happens:
+- App may be reading a fresh SQLite file without schema.
+- `start:render` now runs both migration deploy and db push to make schema creation resilient.
