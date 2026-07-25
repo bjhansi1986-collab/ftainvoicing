@@ -81,7 +81,8 @@ export async function GET(
     };
 
     const pdfBuffer = await PDFGenerator.generateInvoicePDF(pdfData);
-    const pdfBlob = new Blob([pdfBuffer], { type: 'application/pdf' });
+    const pdfBytes = new Uint8Array(pdfBuffer);
+    const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
 
     return new NextResponse(pdfBlob, {
       headers: {
