@@ -32,3 +32,6 @@ prisma/dev.db-journal
 
 # Testing
 .coverage
+
+# TypeScript
+*.tsbuildinfo

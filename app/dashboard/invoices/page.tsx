@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { apiPath } from '@/lib/paths';
+import { apiPath, withBasePath } from '@/lib/paths';
 
 interface Invoice {
   id: string;
@@ -18,6 +18,8 @@ interface Invoice {
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [filter, setFilter] = useState('all');
+  const [cloningId, setCloningId] = useState<string | null>(null);
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     // Fetch invoices
@@ -78,6 +80,25 @@ export default function InvoicesPage() {
     return true;
   });
 
+  const handleClone = async (id: string) => {
+    setMessage('');
+    setCloningId(id);
+    try {
+      const response = await fetch(apiPath(`/invoices/${id}/clone`), { method: 'POST' });
+      if (response.ok) {
+        const cloned = await response.json();
+        window.location.href = withBasePath(`/dashboard/invoices/${cloned.id}/edit`);
+        return;
+      }
+      const error = await response.json();
+      setMessage(error.error || 'Failed to clone invoice.');
+    } catch {
+      setMessage('Failed to clone invoice.');
+    } finally {
+      setCloningId(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -87,6 +108,10 @@ export default function InvoicesPage() {
           ➕ New Invoice
         </Link>
       </div>
+
+      {message && (
+        <div className="p-3 rounded-lg bg-red-100 text-red-700 text-sm">{message}</div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2">
@@ -162,6 +187,13 @@ export default function InvoicesPage() {
                     >
                       PDF
                     </a>
+                    <button
+                      onClick={() => handleClone(invoice.id)}
+                      disabled={cloningId === invoice.id}
+                      className="text-purple-600 hover:underline text-sm disabled:opacity-50"
+                    >
+                      {cloningId === invoice.id ? 'Cloning...' : 'Clone'}
+                    </button>
                     <button className="text-red-600 hover:underline text-sm">Delete</button>
                   </td>
                 </tr>

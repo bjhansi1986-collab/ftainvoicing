@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { generateNextInvoiceNumber } from '@/lib/tenant';
 
 type InvoiceInputLine = {
   itemId?: string;
@@ -53,28 +54,7 @@ export async function POST(request: NextRequest) {
     }
 
     const createdInvoice = await prisma.$transaction(async (tx) => {
-      const settings = await tx.invoiceSettings.upsert({
-        where: { companyId: client.companyId },
-        update: {},
-        create: {
-          companyId: client.companyId,
-          invoicePrefix: 'INV',
-          invoiceNumbering: 1000,
-          defaultCurrency: 'AED',
-          defaultVatRate: 5,
-          enableVat: true,
-          paymentTermsDays: 30,
-          invoiceTemplate: 'standard',
-          customNotes: '',
-          footerText: 'Thank you for your business!',
-        },
-      });
-      const invoiceNumber = `${settings.invoicePrefix}-${String(settings.invoiceNumbering).padStart(6, '0')}`;
-
-      await tx.invoiceSettings.update({
-        where: { companyId: client.companyId },
-        data: { invoiceNumbering: { increment: 1 } },
-      });
+      const { invoiceNumber } = await generateNextInvoiceNumber(tx, client.companyId);
 
       return tx.invoice.create({
         data: {

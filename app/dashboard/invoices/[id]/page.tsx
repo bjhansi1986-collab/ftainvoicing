@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { CurrencyConverter } from '@/lib/currency';
 import { NumberFormatter } from '@/lib/formatter';
-import { apiPath } from '@/lib/paths';
+import { apiPath, withBasePath } from '@/lib/paths';
 
 interface InvoiceLine {
   id: string;
@@ -65,6 +65,8 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
   const [showAed, setShowAed] = useState(true);
   const [isRecordingPayment, setIsRecordingPayment] = useState(false);
   const [paymentMessage, setPaymentMessage] = useState('');
+  const [isCloning, setIsCloning] = useState(false);
+  const [cloneMessage, setCloneMessage] = useState('');
   const [paymentForm, setPaymentForm] = useState({
     amount: '',
     paymentDate: new Date().toISOString().split('T')[0],
@@ -120,6 +122,25 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
     ? CurrencyConverter.convert(invoice.totalAmount, invoice.currency, 'AED')
     : null;
   const remainingAmount = Math.max(0, Number(invoice.totalAmount) - Number(invoice.paidAmount || 0));
+
+  const handleClone = async () => {
+    setCloneMessage('');
+    setIsCloning(true);
+    try {
+      const response = await fetch(apiPath(`/invoices/${invoice.id}/clone`), { method: 'POST' });
+      if (response.ok) {
+        const cloned = await response.json();
+        window.location.href = withBasePath(`/dashboard/invoices/${cloned.id}/edit`);
+        return;
+      }
+      const data = await response.json();
+      setCloneMessage(data.error || 'Failed to clone invoice.');
+    } catch {
+      setCloneMessage('Failed to clone invoice.');
+    } finally {
+      setIsCloning(false);
+    }
+  };
 
   const recordPayment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -177,6 +198,9 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
           <Link href={`/dashboard/invoices/${invoice.id}/edit`} className="btn-outline">
             Edit Invoice
           </Link>
+          <button onClick={handleClone} disabled={isCloning} className="btn-outline disabled:opacity-50">
+            {isCloning ? 'Cloning...' : '⧉ Clone Invoice'}
+          </button>
           <a
             href={`${apiPath(`/invoices/${invoice.id}/pdf`)}?showAed=${showAed ? '1' : '0'}`}
             target="_blank"
@@ -190,6 +214,10 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
           </Link>
         </div>
       </div>
+
+      {cloneMessage && (
+        <div className="p-3 rounded-lg bg-red-100 text-red-700 text-sm">{cloneMessage}</div>
+      )}
 
       <div className="card">
         <div className="flex flex-col md:flex-row md:justify-between gap-4">

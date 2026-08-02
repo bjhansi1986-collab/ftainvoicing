@@ -1,4 +1,44 @@
+import type { Prisma, PrismaClient } from '@prisma/client';
 import prisma from './prisma';
+
+type PrismaClientOrTx = PrismaClient | Prisma.TransactionClient;
+
+/**
+ * Generates the next invoice number for a company using the invoice settings
+ * format (prefix + zero-padded numbering), and atomically increments the
+ * numbering counter. Must be called with the same client/transaction used to
+ * persist the invoice so the sequence stays consistent across create/clone.
+ */
+export async function generateNextInvoiceNumber(
+  tx: PrismaClientOrTx,
+  companyId: string
+) {
+  const settings = await tx.invoiceSettings.upsert({
+    where: { companyId },
+    update: {},
+    create: {
+      companyId,
+      invoicePrefix: 'INV',
+      invoiceNumbering: 1000,
+      defaultCurrency: 'AED',
+      defaultVatRate: 5,
+      enableVat: true,
+      paymentTermsDays: 30,
+      invoiceTemplate: 'standard',
+      customNotes: '',
+      footerText: 'Thank you for your business!',
+    },
+  });
+
+  const invoiceNumber = `${settings.invoicePrefix}-${String(settings.invoiceNumbering).padStart(6, '0')}`;
+
+  await tx.invoiceSettings.update({
+    where: { companyId },
+    data: { invoiceNumbering: { increment: 1 } },
+  });
+
+  return { invoiceNumber, settings };
+}
 
 export async function ensurePrimaryCompany() {
   let company = await prisma.company.findFirst({
